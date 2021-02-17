@@ -1,0 +1,54 @@
+Use Sakila;
+
+-- Select the first name, last name, and email address of all the customers who have rented a movie.
+
+SELECT first_name, last_name, email
+FROM customer c
+JOIN rental r on r.customer_id=c.customer_id
+WHERE rental_id > 0
+GROUP BY first_name, Last_name, email
+ORDER BY last_name; 
+
+-- What is the average payment made by each customer (display the customer id, customer name (concatenated), and the average payment made).
+SELECT c.customer_id, concat(first_name," ", last_name), round(avg(amount),2)
+FROM customer c
+JOIN payment p on p.customer_id=c.customer_id
+GROUP BY customer_id;
+
+
+-- Select the name and email address of all the customers who have rented the "Action" movies.
+
+-- join
+SELECT concat(first_name," ", last_name), email
+FROM customer c 
+LEFT JOIN rental r on c.customer_id=r.customer_id
+LEFT JOIN inventory i on i.inventory_id = r.inventory_id
+LEFT JOIN film_category f on f.film_id=i.film_id
+LEFT JOIN category ca on ca.category_id=f.category_id
+WHERE name = 'Action';
+
+-- where in
+
+SELECT concat(first_name," ", last_name), email 
+FROM customer
+WHERE customer_id in 
+	(SELECT customer_id
+    FROM rental
+		WHERE inventory_id in
+			(SELECT inventory_id
+			FROM inventory
+            WHERE film_id in
+				(SELECT film_id FROM film_category
+					WHERE category_id=1 in
+					(SELECT category_id from category))));
+                
+
+SELECT customer_id,
+CASE 
+	WHEN amount between 0 and 2 THEN "low"
+	WHEN amount between 2 and 4 THEN "medium"
+	WHEN amount > 4 THEN "high"
+	ELSE "no spent yet"
+END AS customer_classification 
+FROM payment
+GROUP BY customer_id, amount;
